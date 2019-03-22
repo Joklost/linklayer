@@ -47,7 +47,7 @@ const sims::Link linkaiders::LinkModel::get_link(int x, int y, double timestamp)
     return sims::Link{}; /* No link found. */
 }
 
-bool linkaiders::LinkModel::should_receive(const Action &t, const Action &r) {
+double linkaiders::LinkModel::should_receive(const Action &t, const Action &r, const std::vector<Action> &tx_list) {
     auto &link = this->get_link(t.id, r.id, t.start);
     if (link.get_id() == 0ul || common::is_zero(link.get_distance())) {
         /* No link. */
@@ -57,7 +57,7 @@ bool linkaiders::LinkModel::should_receive(const Action &t, const Action &r) {
     std::vector<double> interference{};
     auto rssi = linkaiders::TX_POWER - link.get_distance();
 
-    for (auto &tx_i : this->tx) {
+    for (auto &tx_i : tx_list) {
         if (tx_i.id == t.id) {
             /* No interference from own transmission. */
             continue;
@@ -76,9 +76,10 @@ bool linkaiders::LinkModel::should_receive(const Action &t, const Action &r) {
         interference.push_back(linkaiders::TX_POWER - link_i.get_distance());
     }
 
-    std::random_device rd{};
-    std::mt19937 gen{rd()};
-    auto pep = sims::radiomodel::pep(rssi, linkaiders::PACKET_SIZE, interference);
-    std::bernoulli_distribution d(1.0 - pep);
-    return d(gen);
+//    std::random_device rd{};
+//    std::mt19937 gen{rd()};
+//    auto pep = sims::radiomodel::pep(rssi, linkaiders::PACKET_SIZE, interference);
+    return sims::radiomodel::pep(rssi, linkaiders::PACKET_SIZE, interference);
+//    std::bernoulli_distribution d(1.0 - pep);
+//    return d(gen);
 }

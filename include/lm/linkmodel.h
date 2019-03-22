@@ -82,6 +82,8 @@ int status(void *model, int id, int chn, double timestamp);
  */
 int end_listen(void *model, int id, int chn, double timestamp);
 
+int *live_nodes(void *model, double timestamp);
+
 #ifdef __cplusplus
 }
 #endif

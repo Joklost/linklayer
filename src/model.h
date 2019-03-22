@@ -16,6 +16,7 @@ namespace linkaiders {
     const unsigned long PACKET_SIZE = 20;
     const double DISTANCE_THRESHOLD = -110.0;
     const double TX_POWER = 26.0;
+    const double TIME_GAP = 20000.0;
 
     enum State {
         Idle,
@@ -57,7 +58,7 @@ namespace linkaiders {
         NodeMap nodes{};
         TopologyMap topologies{};
 
-        std::vector<Action> tx{};
+        std::vector<std::vector<Action>> tx{};
         std::vector<std::vector<Action>> rx{};
 
         LinkModel(int nchans, NodeMap node_map, TopologyMap topology_map) : tx(nchans), rx(nchans),
@@ -66,7 +67,7 @@ namespace linkaiders {
 
         const sims::Link get_link(int x, int y, double timestamp) const;
 
-        bool should_receive(const Action &t, const Action &r);
+        double should_receive(const Action &t, const Action &r, const std::vector<Action> &tx_list);
     };
 }
 
