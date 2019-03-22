@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.7.1)
-project(lm VERSION 1.0)
-
 set(CMAKE_CXX_STANDARD 14)
 
+project(lm VERSION 1.0)
+
+add_subdirectory(libs)
 add_library(lm src/linkmodel.cpp src/gpslog.h src/model.h src/gpslog.cpp src/model.cpp)
 
 # Define headers for this library. PUBLIC headers are used for
