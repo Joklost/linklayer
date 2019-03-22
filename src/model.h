@@ -7,7 +7,7 @@
 #include <map>
 #include <unordered_map>
 
-#include <reachi/link.h>
+#include <sims/link.h>
 
 namespace linkaiders {
     const int LM_SUCCESS = 0;
@@ -47,10 +47,10 @@ namespace linkaiders {
     };
 
     struct Topology {
-        std::vector<reachi::Link> links{};
+        std::vector<sims::Link> links{};
     };
 
-    using NodeMap = std::unordered_map<unsigned long, reachi::Node>;
+    using NodeMap = std::unordered_map<unsigned long, sims::Node>;
     using TopologyMap = std::map<double, Topology>;
 
     struct LinkModel {
@@ -64,7 +64,7 @@ namespace linkaiders {
                                                                             nodes(std::move(node_map)),
                                                                             topologies(std::move(topology_map)) {};
 
-        const reachi::Link get_link(int x, int y, double timestamp) const;
+        const sims::Link get_link(int x, int y, double timestamp) const;
 
         bool should_receive(const Action &t, const Action &r);
     };

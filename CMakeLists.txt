@@ -20,7 +20,7 @@ install(TARGETS lm EXPORT LmLibraryConfig
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})  # This is for Windows
 install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-target_link_libraries(lm geo common reachi)
+target_link_libraries(lm geo common sims)
 
 enable_testing()
 add_subdirectory(test)

@@ -2,8 +2,8 @@
 #include <algorithm>
 #include <iterator>
 
-#include <reachi/math.h>
-#include <reachi/node.h>
+#include <sims/math.h>
+#include <sims/node.h>
 
 #include <lm/linkmodel.h>
 #include <common/helpers.h>
@@ -35,7 +35,7 @@ void *initialize(int num_nodes, int nchans, const char *gpslog) {
     }
 
     /* Generate topologies. */
-    std::vector<reachi::Node> node_list{};
+    std::vector<sims::Node> node_list{};
     node_list.reserve(node_map.size());
     for (auto &item : node_map) {
         auto node = item.second;
@@ -81,7 +81,7 @@ void *initialize(int num_nodes, int nchans, const char *gpslog) {
                     auto &link = links.back();
                     /* Compute distance based path loss on the links as we create them. */
                     auto distance = geo::distance_between(node1.current_location, node2.current_location);
-                    auto pathloss = reachi::math::distance_pathloss(distance * KM);
+                    auto pathloss = sims::math::distance_pathloss(distance * KM);
                     link.distance = pathloss;
                 }
             }

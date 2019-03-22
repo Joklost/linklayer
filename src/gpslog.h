@@ -3,7 +3,7 @@
 
 #include <unordered_map>
 
-#include <reachi/node.h>
+#include <sims/node.h>
 #include "model.h"
 
 linkaiders::NodeMap parse_gpsfile(const char *gpslog);

@@ -1,6 +1,6 @@
 
 #include <common/equality.h>
-#include <reachi/radiomodel.h>
+#include <sims/radiomodel.h>
 #include "model.h"
 
 bool linkaiders::Action::is_within(const Action &action) const {
@@ -28,10 +28,10 @@ linkaiders::Action::Action(linkaiders::State state, int id, int chn, double star
 
 linkaiders::Action::Action() = default;
 
-const reachi::Link linkaiders::LinkModel::get_link(int x, int y, double timestamp) const {
+const sims::Link linkaiders::LinkModel::get_link(int x, int y, double timestamp) const {
     auto topology = this->topologies.lower_bound(timestamp);
     if (topology == this->topologies.end()) {
-        return reachi::Link{}; /* No link found. */
+        return sims::Link{}; /* No link found. */
     }
 
     auto &links = topology->second.links;
@@ -44,7 +44,7 @@ const reachi::Link linkaiders::LinkModel::get_link(int x, int y, double timestam
         }
     }
 
-    return reachi::Link{}; /* No link found. */
+    return sims::Link{}; /* No link found. */
 }
 
 bool linkaiders::LinkModel::should_receive(const Action &t, const Action &r) {
@@ -78,7 +78,7 @@ bool linkaiders::LinkModel::should_receive(const Action &t, const Action &r) {
 
     std::random_device rd{};
     std::mt19937 gen{rd()};
-    auto pep = reachi::radiomodel::pep(rssi, linkaiders::PACKET_SIZE, interference);
+    auto pep = sims::radiomodel::pep(rssi, linkaiders::PACKET_SIZE, interference);
     std::bernoulli_distribution d(1.0 - pep);
     return d(gen);
 }
