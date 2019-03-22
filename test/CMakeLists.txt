@@ -1,4 +1,4 @@
-
+add_subdirectory(libs)
 add_executable(test_lm main.cpp test.cpp)
 
 target_link_libraries(test_lm PUBLIC lm Catch2)
