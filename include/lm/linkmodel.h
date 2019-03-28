@@ -1,6 +1,8 @@
 #ifndef LINKAIDERS_LINKMODEL_H
 #define LINKAIDERS_LINKMODEL_H
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

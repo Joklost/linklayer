@@ -25,7 +25,9 @@ if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libs/CMakeLists.txt")
 endif ()
 
 add_subdirectory(libs)
+set(HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/lm/linkmodel.h)
 add_library(lm src/linkmodel.cpp src/gpslog.h src/model.h src/gpslog.cpp src/model.cpp)
+set_target_properties(lm PROPERTIES PUBLIC_HEADER ${HEADER_FILES})
 
 # Define headers for this library. PUBLIC headers are used for
 # compiling the library, and will be added to consumers' build
@@ -35,14 +37,24 @@ target_include_directories(lm PUBLIC
         $<INSTALL_INTERFACE:include>
         PRIVATE src test)
 
+    #include_directories(include)
+
 # 'make install' to the correct locations (provided by GNUInstallDirs).
 install(TARGETS lm EXPORT LmLibraryConfig
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})  # This is for Windows
-install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}  # This is for Windows
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+# This makes the project importable from install directory.
+install(EXPORT LmLibraryConfig DESTINATION cmake)
+
+# This makes the project importable from the build directory
+export(TARGETS lm FILE LmLibraryConfig.cmake)
 
 target_link_libraries(lm geo common sims)
 
 enable_testing()
 add_subdirectory(test)
+
