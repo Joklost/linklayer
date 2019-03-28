@@ -7,10 +7,10 @@
 #include <map>
 #include <unordered_map>
 
+#include <common/equality.h>
 #include <sims/link.h>
 
-namespace linkaiders {
-    const int LM_SUCCESS = 0;
+namespace lm {
     const int LM_ERROR = -1;
 
     const unsigned long PACKET_SIZE = 20;
@@ -24,9 +24,8 @@ namespace linkaiders {
         Transmit,
     };
 
-    /* Model */
     struct Action {
-        State state{};
+        State state{Idle};
         int id{};
         int chn{};
         double start{};
@@ -48,26 +47,29 @@ namespace linkaiders {
     };
 
     struct Topology {
+        double timestamp{};
         std::vector<sims::Link> links{};
     };
 
     using NodeMap = std::unordered_map<unsigned long, sims::Node>;
-    using TopologyMap = std::map<double, Topology>;
+    using NodeList = std::vector<sims::Node>;
+    using TopologyMap = std::map<double, Topology, common::is_less<double>>;
 
     struct LinkModel {
-        NodeMap nodes{};
+        NodeMap node_map{};
         TopologyMap topologies{};
+        NodeList node_list{};
 
         std::vector<std::vector<Action>> tx{};
         std::vector<std::vector<Action>> rx{};
 
-        LinkModel(int nchans, NodeMap node_map, TopologyMap topology_map) : tx(nchans), rx(nchans),
-                                                                            nodes(std::move(node_map)),
-                                                                            topologies(std::move(topology_map)) {};
+        LinkModel(int nchans, NodeMap n_map);
 
-        const sims::Link get_link(int x, int y, double timestamp) const;
+        const sims::Link get_link(int x, int y, double timestamp);
 
         double should_receive(const Action &t, const Action &r, const std::vector<Action> &tx_list);
+
+        Topology &get_topology(double timestamp);
     };
 }
 

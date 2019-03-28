@@ -4,8 +4,8 @@
 
 #include "gpslog.h"
 
-linkaiders::NodeMap parse_gpsfile(const char *gpslog) {
-    linkaiders::NodeMap nodes{};
+lm::NodeMap parse_gpsfile(const char *gpslog) {
+    lm::NodeMap nodes{};
     std::ifstream logfile{gpslog};
 
     if (!logfile.is_open()) {

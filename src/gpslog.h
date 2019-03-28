@@ -6,7 +6,7 @@
 #include <sims/node.h>
 #include "model.h"
 
-linkaiders::NodeMap parse_gpsfile(const char *gpslog);
+lm::NodeMap parse_gpsfile(const char *gpslog);
 
 
 #endif /* LINKAIDERS_GPSLOG_H */

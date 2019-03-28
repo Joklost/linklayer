@@ -82,7 +82,17 @@ int status(void *model, int id, int chn, double timestamp);
  */
 int end_listen(void *model, int id, int chn, double timestamp);
 
-int *live_nodes(void *model, double timestamp);
+/**
+ * Get an array of node identifiers of all nodes alive at a given timestamp.
+ *
+ * The returned array should be free'd by caller.
+ *
+ * @param model The link model object
+ * @param timestamp Timestamp to get alive nodes
+ * @param node_count Amount of node identifiers returned
+ * @return Array containing node identifiers
+ */
+int *alive_nodes(void *model, double timestamp, int *node_count);
 
 #ifdef __cplusplus
 }
