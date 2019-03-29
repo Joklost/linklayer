@@ -1,59 +1,57 @@
 
 #include <common/equality.h>
 #include <common/helpers.h>
-#include <sims/radiomodel.h>
-#include <sims/math.h>
 
 #include "model.h"
 
-bool lm::Action::is_within(const Action &action) const {
+bool linklayer::Action::is_within(const Action &action) const {
     return this->start >= action.start && this->end <= action.end;
 }
 
-bool lm::Action::operator==(const lm::Action &rhs) const {
+bool linklayer::Action::operator==(const linklayer::Action &rhs) const {
     return state == rhs.state &&
            id == rhs.id &&
            chn == rhs.chn;
 //         &&  start == rhs.start;
 }
 
-bool lm::Action::operator!=(const lm::Action &rhs) const {
+bool linklayer::Action::operator!=(const linklayer::Action &rhs) const {
     return !(rhs == *this);
 }
 
-lm::Action::Action(lm::State state, int id, int chn) : state(state), id(id), chn(chn) {}
+linklayer::Action::Action(linklayer::State state, int id, int chn) : state(state), id(id), chn(chn) {}
 
-lm::Action::Action(lm::State state, int id, int chn, double start) : state(state), id(id),
+linklayer::Action::Action(linklayer::State state, int id, int chn, double start) : state(state), id(id),
                                                                                             chn(chn), start(start) {}
 
-lm::Action::Action(lm::State state, int id, int chn, double start, double end) : state(
+linklayer::Action::Action(linklayer::State state, int id, int chn, double start, double end) : state(
         state), id(id), chn(chn), start(start), end(end) {}
 
-lm::Action::Action() = default;
+linklayer::Action::Action() = default;
 
-const sims::Link lm::LinkModel::get_link(int x, int y, double timestamp) {
+const linklayer::Link linklayer::LinkModel::get_link(int x, int y, double timestamp) {
     auto &topology = this->get_topology(timestamp);
 
     for (const auto &link : topology.links) {
-        auto &node_pair = link.get_nodes();
-        if (((node_pair.first.get_id() == x && node_pair.second.get_id() == y) ||
-             (node_pair.first.get_id() == y && node_pair.second.get_id() == x))) {
+        auto &node_pair = link.nodes;
+        if (((node_pair.first.id == x && node_pair.second.id == y) ||
+             (node_pair.first.id == y && node_pair.second.id == x))) {
             return link;
         }
     }
 
-    return sims::Link{}; /* No link found. */
+    return linklayer::Link{}; /* No link found. */
 }
 
-double lm::LinkModel::should_receive(const Action &t, const Action &r, const std::vector<Action> &tx_list) {
+double linklayer::LinkModel::should_receive(const Action &t, const Action &r, const std::vector<Action> &tx_list) {
     auto &link = this->get_link(t.id, r.id, t.start);
-    if (link.get_id() == 0ull || common::is_zero(link.get_distance())) {
+    if (link.id == 0ull || common::is_zero(link.pathloss)) {
         /* No link. */
         return false;
     }
 
     std::vector<double> interference{};
-    auto rssi = lm::TX_POWER - link.get_distance();
+    auto rssi = linklayer::TX_POWER - link.pathloss;
 
     for (auto &tx_i : tx_list) {
         if (tx_i.id == t.id) {
@@ -67,22 +65,22 @@ double lm::LinkModel::should_receive(const Action &t, const Action &r, const std
         }
 
         auto &link_i = this->get_link(t.id, r.id, t.start);
-        if (link.get_id() == 0ul || common::is_zero(link.get_distance())) {
+        if (link.id == 0ul || common::is_zero(link.pathloss)) {
             continue;
         }
 
-        interference.push_back(lm::TX_POWER - link_i.get_distance());
+        interference.push_back(linklayer::TX_POWER - link_i.pathloss);
     }
 
 //    std::random_device rd{};
 //    std::mt19937 gen{rd()};
-//    auto pep = sims::radiomodel::pep(rssi, lm::PACKET_SIZE, interference);
-    return sims::radiomodel::pep(rssi, lm::PACKET_SIZE, interference);
+//    auto pep = sims::radiomodel::pep(rssi, linklayer::PACKET_SIZE, interference);
+//    return sims::radiomodel::pep(rssi, linklayer::PACKET_SIZE, interference);
 //    std::bernoulli_distribution d(1.0 - pep);
 //    return d(gen);
 }
 
-lm::Topology &lm::LinkModel::get_topology(const double timestamp) {
+linklayer::Topology &linklayer::LinkModel::get_topology(const double timestamp) {
     auto lower_bound = 0.0;
     for (auto &topology : this->topologies) {
         if (common::is_equal(topology.first, timestamp)) {
@@ -108,8 +106,8 @@ lm::Topology &lm::LinkModel::get_topology(const double timestamp) {
             auto node1 = this->node_list[i]; /* Copy */
 
             for (auto &location : node1.location_history) {
-                if (location.get_time() <= time && location.get_time() > (time - lm::TIME_GAP)) {
-                    node1.current_location = location;
+                if (location.get_time() <= time && location.get_time() > (time - linklayer::TIME_GAP)) {
+                    node1.location = location;
                 }
             }
 
@@ -117,20 +115,20 @@ lm::Topology &lm::LinkModel::get_topology(const double timestamp) {
                 auto node2 = this->node_list[j]; /* Copy */
 
                 for (auto &location : node2.location_history) {
-                    if (location.get_time() <= time && location.get_time() > (time - lm::TIME_GAP)) {
-                        node2.current_location = location;
+                    if (location.get_time() <= time && location.get_time() > (time - linklayer::TIME_GAP)) {
+                        node2.location = location;
                     }
                 }
 
-                if (node1.current_location.get_latitude() > 0 && node2.current_location.get_latitude() > 0 &&
-                    node1.current_location.get_longitude() > 0 && node2.current_location.get_longitude() > 0) {
-                    auto id = common::combine_ids(node1.get_id(), node2.get_id());
+                if (node1.location.get_latitude() > 0 && node2.location.get_latitude() > 0 &&
+                    node1.location.get_longitude() > 0 && node2.location.get_longitude() > 0) {
+                    auto id = common::combine_ids(node1.id, node2.id);
                     links.emplace_back(id, node1, node2);
                     auto &link = links.back();
                     /* Compute distance based path loss on the links as we create them. */
-                    auto distance = geo::distance_between(node1.current_location, node2.current_location);
-                    auto pathloss = sims::math::distance_pathloss(distance * KM);
-                    link.distance = pathloss;
+//                    auto distance = geo::distance_between(node1.location, node2.location);
+//                    auto pathloss = sims::math::distance_pathloss(distance * KM);
+//                    link.pathloss = pathloss;
                 }
             }
         }
@@ -139,7 +137,7 @@ lm::Topology &lm::LinkModel::get_topology(const double timestamp) {
     return topology;
 }
 
-lm::LinkModel::LinkModel(int nchans, lm::NodeMap n_map) : tx(nchans), rx(nchans), node_map(std::move(n_map)) {
+linklayer::LinkModel::LinkModel(int nchans, linklayer::NodeMap n_map) : tx(nchans), rx(nchans), node_map(std::move(n_map)) {
     /* Generate topologies. */
     node_list.reserve(node_map.size());
     for (auto &item : node_map) {

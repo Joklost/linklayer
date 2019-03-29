@@ -5,7 +5,7 @@
 
 #include <catch2/catch.hpp>
 
-#include <lm/linkmodel.h>
+#include <linklayer/linkmodel.h>
 #include "../src/model.h"
 
 void *get_test_model() {
@@ -16,12 +16,12 @@ void *get_test_model() {
 class TestModel {
 private:
     void *model;
-    lm::LinkModel *linkmodel;
+    linklayer::LinkModel *linkmodel;
 
     TestModel() {
         std::cout << "Constructing test model... " << std::flush;
         this->model = get_test_model();
-        this->linkmodel = static_cast<lm::LinkModel *>(this->model);
+        this->linkmodel = static_cast<linklayer::LinkModel *>(this->model);
         std::cout << "OK\n\n" << std::flush;
     }
 
@@ -39,7 +39,7 @@ public:
     }
 
     void *get_model() {
-        return static_cast<void *>(new lm::LinkModel{*this->linkmodel});
+        return static_cast<void *>(new linklayer::LinkModel{*this->linkmodel});
     }
 };
 
@@ -54,7 +54,7 @@ TEST_CASE("Initialize link model object", "[lm/linkmodel]") {
 
 TEST_CASE("Topology generation", "[lm/linkmodel]") {
     auto *model = TestModel::get_instance()->get_model();
-    auto *linkmodel = static_cast<lm::LinkModel *>(model);
+    auto *linkmodel = static_cast<linklayer::LinkModel *>(model);
 
     auto &topologies = linkmodel->topologies;
 
@@ -65,12 +65,12 @@ TEST_CASE("Topology generation", "[lm/linkmodel]") {
         auto &links = linkmodel->get_topology(time).links;
 
         for (const auto &link : links) {
-            auto &nodes = link.get_nodes();
+            auto &nodes = link.nodes;
 
             CHECK_FALSE(nodes.first == nodes.second);
-            CHECK(nodes.first.current_location.get_time() <= time);
-            CHECK(nodes.second.current_location.get_time() <= time);
-            CHECK_FALSE(link.distance == Approx(0.0));
+            CHECK(nodes.first.location.get_time() <= time);
+            CHECK(nodes.second.location.get_time() <= time);
+            CHECK_FALSE(link.pathloss == Approx(0.0));
         }
     }
 
@@ -80,20 +80,20 @@ TEST_CASE("Topology generation", "[lm/linkmodel]") {
 
 TEST_CASE("Topology connectedness", "[lm/linkmodel]") {
     auto *model = TestModel::get_instance()->get_model();
-    auto *linkmodel = static_cast<lm::LinkModel *>(model);
+    auto *linkmodel = static_cast<linklayer::LinkModel *>(model);
 
     for (const auto &topology : linkmodel->topologies) {
         auto time = topology.first;
         auto &links = linkmodel->get_topology(time).links;
 
         for (const auto &link : links) {
-            auto &node1 = link.get_nodes().first;
-            auto &node2 = link.get_nodes().second;
+            auto &node1 = link.nodes.first;
+            auto &node2 = link.nodes.second;
 
-            if ((lm::TX_POWER - link.distance) < lm::DISTANCE_THRESHOLD) {
-                CHECK_FALSE(is_connected(model, node1.get_id(), node2.get_id(), time));
+            if ((linklayer::TX_POWER - link.pathloss) < linklayer::DISTANCE_THRESHOLD) {
+                CHECK_FALSE(is_connected(model, node1.id, node2.id, time));
             } else {
-                CHECK(is_connected(model, node1.get_id(), node2.get_id(), time));
+                CHECK(is_connected(model, node1.id, node2.id, time));
             }
         }
     }

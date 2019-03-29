@@ -1,12 +1,11 @@
-#ifndef LINKAIDERS_GPSLOG_H
-#define LINKAIDERS_GPSLOG_H
+#ifndef LINKLAYER_GPSLOG_H
+#define LINKLAYER_GPSLOG_H
 
 #include <unordered_map>
 
-#include <sims/node.h>
 #include "model.h"
 
-lm::NodeMap parse_gpsfile(const char *gpslog);
+linklayer::NodeMap parse_gpsfile(const char *gpslog);
 
 
-#endif /* LINKAIDERS_GPSLOG_H */
+#endif /* LINKLAYER_GPSLOG_H */

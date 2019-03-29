@@ -1,5 +1,5 @@
-#ifndef LINKAIDERS_LINKMODEL_H
-#define LINKAIDERS_LINKMODEL_H
+#ifndef LINKLAYER_LINKMODEL_H
+#define LINKLAYER_LINKMODEL_H
 
 #include <stdbool.h>
 
@@ -100,4 +100,4 @@ int *alive_nodes(void *model, double timestamp, int *node_count);
 }
 #endif
 
-#endif /* LINKAIDERS_LINKMODEL_H */
+#endif /* LINKLAYER_LINKMODEL_H */

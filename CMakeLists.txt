@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.7.1)
 set(CMAKE_CXX_STANDARD 14)
 
-project(lm VERSION 1.0)
+project(linklayer VERSION 1.0)
 
 include(GNUInstallDirs)
 
@@ -25,14 +25,22 @@ if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libs/CMakeLists.txt")
 endif ()
 
 add_subdirectory(libs)
-set(HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/lm/linkmodel.h)
-add_library(lm src/linkmodel.cpp src/gpslog.h src/model.h src/gpslog.cpp src/model.cpp)
-set_target_properties(lm PROPERTIES PUBLIC_HEADER ${HEADER_FILES})
+
+set(HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/linklayer/linkmodel.h)
+
+add_library(linklayer
+        src/linkmodel.cpp
+        src/gpslog.h src/gpslog.cpp
+        src/model.h src/model.cpp
+        src/node.h src/node.cpp
+        src/link.h src/link.cpp)
+
+set_target_properties(linklayer PROPERTIES PUBLIC_HEADER ${HEADER_FILES})
 
 # Define headers for this library. PUBLIC headers are used for
 # compiling the library, and will be added to consumers' build
 # paths.
-target_include_directories(lm PUBLIC
+target_include_directories(linklayer PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
         PRIVATE src test)
@@ -40,7 +48,7 @@ target_include_directories(lm PUBLIC
     #include_directories(include)
 
 # 'make install' to the correct locations (provided by GNUInstallDirs).
-install(TARGETS lm EXPORT LmLibraryConfig
+install(TARGETS linklayer EXPORT LinkLayerLibraryConfig
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}  # This is for Windows
@@ -48,12 +56,12 @@ install(TARGETS lm EXPORT LmLibraryConfig
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # This makes the project importable from install directory.
-install(EXPORT LmLibraryConfig DESTINATION cmake)
+install(EXPORT LinkLayerLibraryConfig DESTINATION cmake)
 
 # This makes the project importable from the build directory
-export(TARGETS lm FILE LmLibraryConfig.cmake)
+export(TARGETS linklayer FILE LinkLayerLibraryConfig.cmake)
 
-target_link_libraries(lm geo common sims)
+target_link_libraries(linklayer geo common)
 
 enable_testing()
 add_subdirectory(test)

@@ -7,6 +7,3 @@
 [submodule "libs/geo"]
 	path = libs/geo
 	url = git@github.com:Joklost/geo.git
-[submodule "libs/sims"]
-	path = libs/sims
-	url = git@github.com:Joklost/sims.git

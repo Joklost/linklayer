@@ -1,6 +1,6 @@
 
-#ifndef LINKAIDERS_MODEL_H
-#define LINKAIDERS_MODEL_H
+#ifndef LINKLAYER_MODEL_H
+#define LINKLAYER_MODEL_H
 
 #include <utility>
 #include <random>
@@ -8,9 +8,11 @@
 #include <unordered_map>
 
 #include <common/equality.h>
-#include <sims/link.h>
 
-namespace lm {
+#include "node.h"
+#include "link.h"
+
+namespace linklayer {
     const int LM_ERROR = -1;
 
     const unsigned long PACKET_SIZE = 20;
@@ -48,11 +50,11 @@ namespace lm {
 
     struct Topology {
         double timestamp{};
-        std::vector<sims::Link> links{};
+        std::vector<linklayer::Link> links{};
     };
 
-    using NodeMap = std::unordered_map<unsigned long, sims::Node>;
-    using NodeList = std::vector<sims::Node>;
+    using NodeMap = std::unordered_map<unsigned long, linklayer::Node>;
+    using NodeList = std::vector<linklayer::Node>;
     using TopologyMap = std::map<double, Topology, common::is_less<double>>;
 
     struct LinkModel {
@@ -65,7 +67,7 @@ namespace lm {
 
         LinkModel(int nchans, NodeMap n_map);
 
-        const sims::Link get_link(int x, int y, double timestamp);
+        const linklayer::Link get_link(int x, int y, double timestamp);
 
         double should_receive(const Action &t, const Action &r, const std::vector<Action> &tx_list);
 
@@ -74,4 +76,4 @@ namespace lm {
 }
 
 
-#endif /* LINKAIDERS_MODEL_H */
+#endif /* LINKLAYER_MODEL_H */
