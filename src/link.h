@@ -18,8 +18,7 @@ namespace linklayer {
         unsigned long long id{};
         std::pair<linklayer::Node, linklayer::Node> nodes;
 
-        double pathloss{};
-
+        double rssi{};
     };
 
 }

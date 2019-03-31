@@ -58,14 +58,14 @@ namespace linklayer {
     using TopologyMap = std::map<double, Topology, common::is_less<double>>;
 
     struct LinkModel {
+        LinkModel(int nchans, NodeMap n_map);
+
         NodeMap node_map{};
         TopologyMap topologies{};
         NodeList node_list{};
 
         std::vector<std::vector<Action>> tx{};
         std::vector<std::vector<Action>> rx{};
-
-        LinkModel(int nchans, NodeMap n_map);
 
         const linklayer::Link get_link(int x, int y, double timestamp);
 

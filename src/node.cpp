@@ -1,6 +1,6 @@
 #include "node.h"
 
-linklayer::Node::Node(unsigned long id, geo::Location l) {
+linklayer::Node::Node(unsigned long id, linklayer::Location l) {
     this->id = id;
     this->location = l;
 }

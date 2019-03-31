@@ -21,14 +21,27 @@ linklayer::NodeMap parse_gpsfile(const char *gpslog) {
         }
 
         auto tokens = common::split(line, ",");
-        auto id = std::stoul(tokens[0]);
-        auto latitude = std::stod(tokens[1]);
-        auto longitude = std::stod(tokens[2]);
-        auto timestamp = std::stod(tokens[3]);
+        auto id = std::stoul(tokens.front());
+        tokens.pop_front();
+        auto latitude = std::stod(tokens.front());
+        tokens.pop_front();
+        auto longitude = std::stod(tokens.front());
+        tokens.pop_front();
+        auto timestamp = std::stod(tokens.front());
+        tokens.pop_front();
 
         auto &node = nodes[id]; /* operator[] implicitly constructs new object */
         node.id = id;
         node.location_history.emplace_back(timestamp, latitude, longitude);
+        auto &location = node.location_history.back();
+
+        while (!tokens.empty()) {
+            auto n_id = std::stoul(tokens.front());
+            tokens.pop_front();
+            auto rssi = std::stod(tokens.front());
+            tokens.pop_front();
+            location.connections.insert(std::make_pair(n_id, rssi));
+        }
     }
 
     logfile.close();

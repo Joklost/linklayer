@@ -12,12 +12,11 @@ extern "C" {
  *
  * Will return nullptr if initialization fails.
  *
- * @param num_nodes Amount of nodes in the network
  * @param nchans Amount of channels in the network
  * @param gpslog Filepath for a log of GPS coordinates for all nodes
  * @return The link model object
  */
-void *initialize(int num_nodes, int nchans, const char *gpslog);
+void *initialize(int nchans, const char *gpslog);
 
 /**
  * Deinitialize the link model.

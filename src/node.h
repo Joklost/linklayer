@@ -3,23 +3,22 @@
 
 #include <vector>
 
-#include <geo/location.h>
+#include "location.h"
 
 namespace linklayer {
 
     struct Node {
         Node() = default;
 
-        Node(unsigned long id, geo::Location);
+        Node(unsigned long id, linklayer::Location);
 
         bool operator==(const Node &rhs) const;
 
         bool operator!=(const Node &rhs) const;
 
         unsigned long id{};
-        geo::Location location{};
-
-        std::vector<geo::Location> location_history{};
+        linklayer::Location location{};
+        std::vector<linklayer::Location> location_history{};
     };
 
 }

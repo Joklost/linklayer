@@ -27,8 +27,11 @@ endif ()
 add_subdirectory(libs)
 
 set(HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/linklayer/linkmodel.h)
+#set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--export-all-symbols")
 
-add_library(linklayer
+add_library(linklayer SHARED
+        $<TARGET_OBJECTS:common>
+        $<TARGET_OBJECTS:geo>
         src/linkmodel.cpp
         src/gpslog.h src/gpslog.cpp
         src/model.h src/model.cpp
