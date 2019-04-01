@@ -4,31 +4,6 @@
 
 #include "model.h"
 
-bool linklayer::Action::is_within(const Action &action) const {
-    return this->start >= action.start && this->end <= action.end;
-}
-
-bool linklayer::Action::operator==(const linklayer::Action &rhs) const {
-    return state == rhs.state &&
-           id == rhs.id &&
-           chn == rhs.chn;
-//         &&  start == rhs.start;
-}
-
-bool linklayer::Action::operator!=(const linklayer::Action &rhs) const {
-    return !(rhs == *this);
-}
-
-linklayer::Action::Action(linklayer::State state, int id, int chn) : state(state), id(id), chn(chn) {}
-
-linklayer::Action::Action(linklayer::State state, int id, int chn, double start) : state(state), id(id),
-                                                                                   chn(chn), start(start) {}
-
-linklayer::Action::Action(linklayer::State state, int id, int chn, double start, double end) : state(
-        state), id(id), chn(chn), start(start), end(end) {}
-
-linklayer::Action::Action() = default;
-
 const linklayer::Link linklayer::LinkModel::get_link(int x, int y, double timestamp) {
     auto &topology = this->get_topology(timestamp);
 
@@ -44,41 +19,36 @@ const linklayer::Link linklayer::LinkModel::get_link(int x, int y, double timest
 }
 
 double linklayer::LinkModel::should_receive(const Action &t, const Action &r, const std::vector<Action> &tx_list) {
-//    auto &link = this->get_link(t.id, r.id, t.start);
-//    if (link.id == 0ull || common::is_zero(link.pathloss)) {
-//        /* No link. */
-//        return false;
-//    }
-//
-//    std::vector<double> interference{};
-//    auto rssi = linklayer::TX_POWER - link.pathloss;
-//
-//    for (auto &tx_i : tx_list) {
-//        if (tx_i.id == t.id) {
-//            /* No interference from own transmission. */
-//            continue;
-//        }
-//
-//        if (r.end <= tx_i.start || r.start >= tx_i.end) {
-//            /* Time interval does not intersect. */
-//            continue;
-//        }
-//
-//        auto &link_i = this->get_link(t.id, r.id, t.start);
-//        if (link.id == 0ul || common::is_zero(link.pathloss)) {
-//            continue;
-//        }
-//
-//        interference.push_back(linklayer::TX_POWER - link_i.pathloss);
-//    }
+    auto &link = this->get_link(t.id, r.id, t.start);
+    if (link.id == 0ull || common::is_zero(link.rssi)) {
+        /* No link. */
+        return false;
+    }
 
-//    std::random_device rd{};
-//    std::mt19937 gen{rd()};
-//    auto pep = sims::radiomodel::pep(rssi, linklayer::PACKET_SIZE, interference);
-//    return sims::radiomodel::pep(rssi, linklayer::PACKET_SIZE, interference);
-//    std::bernoulli_distribution d(1.0 - pep);
-//    return d(gen);
-    return 0.0;
+    std::vector<double> interference{};
+    auto rssi = link.rssi;
+
+    for (auto &tx_i : tx_list) {
+        if (tx_i.id == t.id) {
+            /* No interference from own transmission. */
+            continue;
+        }
+
+        if (t.end <= tx_i.start || t.start >= tx_i.end) {
+            /* Time interval does not intersect. */
+            continue;
+        }
+
+        auto &link_i = this->get_link(tx_i.id, r.id, t.start);
+        if (link_i.id == 0ull || common::is_zero(link_i.rssi)) {
+            continue;
+        }
+
+        interference.push_back(link_i.rssi);
+    }
+
+    auto pep = linklayer::pep(rssi, linklayer::PACKET_SIZE, interference);
+    return pep;
 }
 
 linklayer::Topology &linklayer::LinkModel::get_topology(const double timestamp) {
@@ -161,4 +131,31 @@ linklayer::LinkModel::LinkModel(int nchans, linklayer::NodeMap n_map) : tx(nchan
             }
         }
     }
+}
+
+double linklayer::linearize(double logarithmic_value) {
+    return std::pow(10, logarithmic_value / 10);
+}
+
+double linklayer::logarithmicize(double linear_value) {
+    return 10 * std::log10(linear_value);
+}
+
+double linklayer::pep(double rssi, unsigned long packetsize, const std::vector<double> &interference) {
+    auto P_N_dB = linklayer::THERMAL_NOISE + linklayer::NOISE_FIGURE;
+    auto P_N = linearize(P_N_dB);
+
+    auto P_I = 0.0;
+    for (auto &RSSI_interference_dB : interference) {
+        P_I += linearize(RSSI_interference_dB);
+    }
+
+    auto P_NI = P_N + P_I;
+    auto P_NI_dB = logarithmicize(P_NI);
+    auto SINR_dB = rssi - P_NI_dB;
+    auto SINR = linearize(SINR_dB);
+
+    auto bep = 0.5 * std::erfc(std::sqrt(SINR / 2.0));  /* Bit error probability. */
+    auto pep = 1.0 - std::pow((1.0 - bep), packetsize * 8.0); /* Packet error probability. */
+    return pep;
 }

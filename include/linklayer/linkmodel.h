@@ -12,7 +12,7 @@ extern "C" {
  *
  * Will return nullptr if initialization fails.
  *
- * @param nchans Amount of channels in the network
+ * @param nchans Number of channels in the network
  * @param gpslog Filepath for a log of GPS coordinates for all nodes
  * @return The link model object
  */

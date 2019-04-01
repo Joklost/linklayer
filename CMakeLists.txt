@@ -36,7 +36,8 @@ add_library(linklayer SHARED
         src/gpslog.h src/gpslog.cpp
         src/model.h src/model.cpp
         src/node.h src/node.cpp
-        src/link.h src/link.cpp)
+        src/link.h src/link.cpp
+        src/action.h src/action.cpp)
 
 set_target_properties(linklayer PROPERTIES PUBLIC_HEADER ${HEADER_FILES})
 

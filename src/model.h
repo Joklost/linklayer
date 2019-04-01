@@ -1,4 +1,3 @@
-
 #ifndef LINKLAYER_MODEL_H
 #define LINKLAYER_MODEL_H
 
@@ -11,42 +10,16 @@
 
 #include "node.h"
 #include "link.h"
+#include "action.h"
 
 namespace linklayer {
     const int LM_ERROR = -1;
 
-    const unsigned long PACKET_SIZE = 20;
-    const double DISTANCE_THRESHOLD = -110.0;
-    const double TX_POWER = 26.0;
     const double TIME_GAP = 20000.0;
 
-    enum State {
-        Idle,
-        Listen,
-        Transmit,
-    };
-
-    struct Action {
-        State state{Idle};
-        int id{};
-        int chn{};
-        double start{};
-        double end{};
-
-        bool is_within(const Action &action) const;
-
-        bool operator==(const Action &rhs) const;
-
-        bool operator!=(const Action &rhs) const;
-
-        Action();
-
-        Action(State type, int id, int chn);
-
-        Action(State state, int id, int chn, double start);
-
-        Action(State state, int id, int chn, double start, double end);
-    };
+    const unsigned long PACKET_SIZE = 20;
+    const double THERMAL_NOISE = -119.66;
+    const double NOISE_FIGURE = 4.2;
 
     struct Topology {
         double timestamp{};
@@ -73,6 +46,12 @@ namespace linklayer {
 
         Topology &get_topology(double timestamp);
     };
+
+    double linearize(double logarithmic_value);
+
+    double logarithmicize(double linear_value);
+
+    double pep(double rssi, unsigned long packetsize, const std::vector<double>& interference);
 }
 
 

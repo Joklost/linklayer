@@ -40,7 +40,7 @@ linklayer::NodeMap parse_gpsfile(const char *gpslog) {
             tokens.pop_front();
             auto rssi = std::stod(tokens.front());
             tokens.pop_front();
-            location.connections.insert(std::make_pair(n_id, rssi));
+            location.connections[n_id] = rssi;
         }
     }
 

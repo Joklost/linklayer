@@ -52,95 +52,96 @@ TEST_CASE("Initialize link model object", "[linklayer/linkmodel]") {
     REQUIRE_FALSE(model);
 }
 
-TEST_CASE("Test link reciprocation", "[linklayer/linkmodel]") {
+TEST_CASE("send/listen single channel no interference", "[linklayer/linkmodel]") {
     auto *model = TestModel::get_instance()->get_model();
-    auto *linkmodel = static_cast<linklayer::LinkModel *>(model);
 
-    auto &nodes = linkmodel->node_map;
-
-//    auto &topology = linkmodel->get_topology(3960000);
-//    for (auto &link : topology.links) {
-//        std::cout << link.nodes.first.id << " " << link.nodes.second.id << " " << link.rssi << std::endl;
-//    }
-
-    for (auto &topology : linkmodel->topologies) {
-        linkmodel->get_topology(topology.first);
-        std::cout << topology.first << " " << topology.second.links.size() << std::endl;
-    }
+    REQUIRE(is_connected(model, 17, 42, 3960000));
+    REQUIRE_FALSE(is_connected(model, 17, 64, 3960000));
+    begin_send(model, 17, 0, 3960000, 10);
+    begin_send(model, 64, 0, 3960000, 20);
+    begin_listen(model, 42, 0, 3960000, 10);
+    REQUIRE(status(model, 42, 0, 3960005) == -1);
+    REQUIRE(end_listen(model, 42, 0, 3960010) == 17);
 }
 
-//TEST_CASE("Topology generation", "[linklayer/linkmodel]") {
-//    auto *model = TestModel::get_instance()->get_model();
-//    auto *linkmodel = static_cast<linklayer::LinkModel *>(model);
-//
-//    auto &topologies = linkmodel->topologies;
-//
-//    REQUIRE(topologies.size() == 494);
-//
-//    for (const auto &topology : topologies) {
-//        auto time = topology.first;
-//        auto &links = linkmodel->get_topology(time).links;
-//
-//        for (const auto &link : links) {
-//            auto &nodes = link.nodes;
-//
-//            CHECK_FALSE(nodes.first == nodes.second);
-//            CHECK(nodes.first.location.get_time() <= time);
-//            CHECK(nodes.second.location.get_time() <= time);
-//            CHECK_FALSE(link.pathloss == Approx(0.0));
-//        }
-//    }
-//
-//    deinit(model);
-//}
+
+TEST_CASE("send/listen multiple channels no interference", "[linklayer/linkmodel]") {
+    auto *model = TestModel::get_instance()->get_model();
+
+    REQUIRE(is_connected(model, 17, 49, 3960000));
+    REQUIRE(is_connected(model, 42, 49, 3960000));
+    begin_send(model, 17, 1, 3960000, 15);
+    begin_send(model, 42, 0, 3960005, 20);
+    begin_listen(model, 49, 1, 3960000, 40);
+    /* Interference as both 17 and 42 transmits at the same time. */
+    REQUIRE(status(model, 49, 1, 3960020) == 17);
+    REQUIRE(end_listen(model, 49, 1, 3960020) == 17);
+}
+
+TEST_CASE("send/listen multiple channels interference", "[linklayer/linkmodel]") {
+    auto *model = TestModel::get_instance()->get_model();
+
+    REQUIRE(is_connected(model, 17, 49, 3960000));
+    REQUIRE(is_connected(model, 42, 49, 3960000));
+    begin_send(model, 17, 0, 3960000, 15);
+    begin_send(model, 17, 1, 3960000, 15);
+    begin_send(model, 42, 1, 3960005, 20);
+    begin_listen(model, 49, 0, 3960000, 40);
+    begin_listen(model, 49, 1, 3960000, 40);
+    /* Interference as both 17 and 42 transmits at the same time. */
+    REQUIRE(status(model, 49, 1, 3960025) == -1);
+    REQUIRE(end_listen(model, 49, 1, 3960025) == -1);
+    /* No interference as only 17 transmits on channel 0. */
+    REQUIRE(status(model, 49, 0, 3960020) == 17);
+    REQUIRE(end_listen(model, 49, 0, 3960020) == 17);
+}
 
 
-//TEST_CASE("Topology connectedness", "[linklayer/linkmodel]") {
-//    auto *model = TestModel::get_instance()->get_model();
-//    auto *linkmodel = static_cast<linklayer::LinkModel *>(model);
-//
-//    for (const auto &topology : linkmodel->topologies) {
-//        auto time = topology.first;
-//        auto &links = linkmodel->get_topology(time).links;
-//
-//        for (const auto &link : links) {
-//            auto &node1 = link.nodes.first;
-//            auto &node2 = link.nodes.second;
-//
-//            if ((linklayer::TX_POWER - link.pathloss) < linklayer::DISTANCE_THRESHOLD) {
-//                CHECK_FALSE(is_connected(model, node1.id, node2.id, time));
-//            } else {
-//                CHECK(is_connected(model, node1.id, node2.id, time));
-//            }
-//        }
-//    }
-//
-//    deinit(model);
-//}
 
-//TEST_CASE("Broadcast/Listen on channels", "[linklayer/linkmodel]") {
-//    auto *model = TestModel::get_instance()->get_model();
-//
-//    begin_send(model, 40, 0, 0.0, 10.0);
-//    begin_listen(model, 10, 0, 0.0, 10.0);
-//    REQUIRE(status(model, 10, 0, 7.0) == -1);
-//    REQUIRE(end_listen(model, 10, 0, 10.0) == 40);
-//
-//
-//    deinit(model);
-//}
+TEST_CASE("Send/Listen on channels", "[linklayer/linkmodel]") {
+    auto *model = TestModel::get_instance()->get_model();
 
-//TEST_CASE("Generate topology for timestamp", "[linklayer/linkmodel]") {
-//    auto *model = TestModel::get_instance()->get_model();
-//
-//    int node_count;
-//    int *nodes;
-//    nodes = alive_nodes(model, 20000, &node_count);
-//    delete[] nodes;
-//    REQUIRE(node_count == 32); /* 32 out of 33 nodes present at 20 seconds. */
-//    nodes = alive_nodes(model, 5240000, &node_count);
-//    REQUIRE(node_count == 2);
-//    delete[] nodes;
-//
-//    deinit(model);
-//}
+    /* 17 <-> 42 @ 3960000 */
+    /* 17 <-> 49 @ 3960000 */
+    /* 42 <-> 49 @ 3960000 */
+
+
+    REQUIRE(is_connected(model, 17, 49, 3960000));
+    REQUIRE(is_connected(model, 42, 49, 3960000));
+    begin_send(model, 17, 1, 3960000, 15);
+    begin_send(model, 42, 1, 3960005, 20);
+    begin_listen(model, 49, 1, 3960005, 40);
+    /* Interference as both 17 and 42 transmits at the same time. */
+    REQUIRE(status(model, 49, 1, 3960020) == -1);
+    REQUIRE(end_listen(model, 49, 1, 3960020) == -1);
+
+    REQUIRE(is_connected(model, 17, 49, 3960000));
+    begin_send(model, 17, 1, 3960025, 20);
+    begin_listen(model, 49, 1, 3960025, 30);
+    end_send(model, 42, 1, 3960019);
+    REQUIRE(status(model, 49, 1, 3960050) == 17);
+    REQUIRE(end_listen(model, 49, 1, 3960055) == 17);
+
+    deinit(model);
+}
+
+TEST_CASE("alive_nodes()", "[linklayer/linkmodel]") {
+    auto *model = TestModel::get_instance()->get_model();
+
+    int node_count;
+    int *nodes;
+
+    nodes = alive_nodes(model, 20000, &node_count);
+    delete[] nodes;
+    REQUIRE(node_count == 0);
+
+    nodes = alive_nodes(model, 3960000, &node_count);
+    delete[] nodes;
+    REQUIRE(node_count == 24);
+
+    nodes = alive_nodes(model, 5240000, &node_count);
+    delete[] nodes;
+    REQUIRE(node_count == 3);
+
+    deinit(model);
+}
