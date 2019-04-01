@@ -39,7 +39,7 @@ double linklayer::LinkModel::should_receive(const Action &t, const Action &r, co
             continue;
         }
 
-        auto &link_i = this->get_link(tx_i.id, r.id, t.start);
+        auto &link_i = this->get_link(tx_i.id, r.id, tx_i.start);
         if (link_i.id == 0ull || common::is_zero(link_i.rssi)) {
             continue;
         }

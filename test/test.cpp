@@ -83,14 +83,24 @@ TEST_CASE("send/listen multiple channels interference", "[linklayer/linkmodel]")
 
     REQUIRE(is_connected(model, 17, 49, 3960000));
     REQUIRE(is_connected(model, 42, 49, 3960000));
+    REQUIRE_FALSE(is_connected(model, 64, 49, 3960000));
     begin_send(model, 17, 0, 3960000, 15);
     begin_send(model, 17, 1, 3960000, 15);
     begin_send(model, 42, 1, 3960005, 20);
+    begin_send(model, 64, 0, 3960000, 20);
+    begin_send(model, 64, 1, 3960000, 20);
     begin_listen(model, 49, 0, 3960000, 40);
     begin_listen(model, 49, 1, 3960000, 40);
     /* Interference as both 17 and 42 transmits at the same time. */
-    REQUIRE(status(model, 49, 1, 3960025) == -1);
-    REQUIRE(end_listen(model, 49, 1, 3960025) == -1);
+    /* However, as the RSSI between 17 and 49 is -49.5
+     * and the RSSI between 42 and 49 is -72.5 the interference
+     * has no effect on the transmission between 17 and 49.
+     * Reversely this is not true for the opposite, as the link
+     * between 17 and 49 causes a very high interference on the
+     * link between 42 and 49.
+     */
+    REQUIRE(status(model, 49, 1, 3960020) == 17);
+    REQUIRE(end_listen(model, 49, 1, 3960020) == 17);
     /* No interference as only 17 transmits on channel 0. */
     REQUIRE(status(model, 49, 0, 3960020) == 17);
     REQUIRE(end_listen(model, 49, 0, 3960020) == 17);
@@ -98,13 +108,8 @@ TEST_CASE("send/listen multiple channels interference", "[linklayer/linkmodel]")
 
 
 
-TEST_CASE("Send/Listen on channels", "[linklayer/linkmodel]") {
+TEST_CASE("send/listen single channel interference", "[linklayer/linkmodel]") {
     auto *model = TestModel::get_instance()->get_model();
-
-    /* 17 <-> 42 @ 3960000 */
-    /* 17 <-> 49 @ 3960000 */
-    /* 42 <-> 49 @ 3960000 */
-
 
     REQUIRE(is_connected(model, 17, 49, 3960000));
     REQUIRE(is_connected(model, 42, 49, 3960000));
